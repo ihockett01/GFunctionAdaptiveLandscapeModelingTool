@@ -7,133 +7,155 @@ from mpl_toolkits import mplot3d
 
 #Drug Resistance Model
 
-# Model Parameters
+class Model:
+    
 
-#For simplicity, I've ignored the presence of the normal cells in this model
+    # Model Parameters
+    def __init__(self, pop1, pop2, strat1, strat2):
+        #Model constants
+        self.time = 1500
+        self.KM = 100
+        self.r = [0.25,0.25]
+        self.k = [0,0.2]  #evolvability: how fast cells can climb adaptive landscape
 
-pop1 = 0 #initial population size: normal cell
-pop2= 10 #initial population size: cancer cell
-strat1 = 3 #initial strategy: normal
-strat2 = 3 #initial strategy: cancer
+        self.uopt = 0
+        self.uopt2 = 0 #the cancer cell strategy for which the drug is maximally effective
 
-time = 1500
-KM = 100
-r = [0.25,0.25]
-k = [0,0.2]  #evolvability: how fast cells can climb adaptive landscape
+        self.s1 = 0.2 #Drug Dosage
 
-uopt = 0
-uopt2 = 0 #the cancer cell strategy for which the drug is maximally effective
+        self.f1=1 #Drug Efficacy
 
-s1 = 0.2 #Drug Dosage
+        self.st = 2
 
-f1=1 #Drug Efficacy
+        self.sk = 4 # squared value
+        self.sa = 100 # squared value
+        self.B = 2 # NOT squared value
 
-IC = [pop1,pop2,strat1,strat2]
+        def evoLV(X, t):
 
-st = 2
+            #Treatment administration
 
-sk = 4 # squared value
-sa = 100 # squared value
-B = 2 # NOT squared value
+            if t>1000:
+                self.s1=0.2
+            else:
+                self.s1=0
 
-def evoLV(X, t):
+            x1 = X[0]
+            x2 = X[1]
+            u1 = X[2]
+            u2 = X[3]
 
-    #Treatment administration
+            K1 = self.KM * math.exp(-(u1 ** 2) / (2 * self.sk))
+            K2 = self.KM * math.exp(-(u2 ** 2) / (2 * self.sk))
 
-    if t>1000:
-        s1=0.2
-    else:
-        s1=0
+            a2 = 1 + math.exp(-(u1 - u2 + self.B) ** 2 / (2 * self.sa)) - math.exp(-(self.B ** 2 / (2 * self.sa)))
+            a1 = 1 + math.exp(-(u2 - u1 + self.B) ** 2 / (2 * self.sa)) - math.exp(-(self.B ** 2 / (2 * self.sa)))
 
-    x1 = X[0]
-    x2 = X[1]
-    u1 = X[2]
-    u2 = X[3]
+            dx1dt = x1 * (self.r[0]/K1 * (K1 - a2*x2 - x1))
+            dx2dt = x2 * (self.r[1]/K2 * (K2 - a1*x1 - x2)-self.s1*self.f1*math.exp(-(u2-self.uopt)**2/(2*self.st)))
 
-    K1 = KM * math.exp(-(u1 ** 2) / (2 * sk))
-    K2 = KM * math.exp(-(u2 ** 2) / (2 * sk))
+            dG1dv  = (-u1*self.r[0]*self.KM*(x1+a2*x2))/(K1*K1*self.sk)*math.exp(-(u1**2)/(2*self.sk)) + (self.r[0]*x2*(u1-u2+self.B))/(K1*self.sa)*math.exp(-((u1-u2+self.B)**2)/(2*self.sa))
+            dG2dv  = (-u2*self.r[1]*self.KM*(a1*x1+x2))/(K2*K2*self.sk)*math.exp(-(u2**2)/(2*self.sk)) + (self.r[1]*x1*(u2-u1+self.B))/(K2*self.sa)*math.exp(-((u2-u1+self.B)**2)/(2*self.sa))+self.s1*self.f1*((u2-self.uopt)/self.st)*math.exp(-((u2-self.uopt)**2)/(2*self.st))
 
-    a2 = 1 + math.exp(-(u1 - u2 + B) ** 2 / (2 * sa)) - math.exp(-(B ** 2 / (2 * sa)))
-    a1 = 1 + math.exp(-(u2 - u1 + B) ** 2 / (2 * sa)) - math.exp(-(B ** 2 / (2 * sa)))
+            dv1dt = self.k[0] * dG1dv
+            dv2dt = self.k[1] * dG2dv
 
-    dx1dt = x1 * (r[0]/K1 * (K1 - a2*x2 - x1))
-    dx2dt = x2 * (r[1]/K2 * (K2 - a1*x1 - x2)-s1*f1*math.exp(-(u2-uopt)**2/(2*st)))
+            dxvdt = np.array([dx1dt, dx2dt, dv1dt, dv2dt])
+            return dxvdt
 
-    dG1dv  = (-u1*r[0]*KM*(x1+a2*x2))/(K1*K1*sk)*math.exp(-(u1**2)/(2*sk)) + (r[0]*x2*(u1-u2+B))/(K1*sa)*math.exp(-((u1-u2+B)**2)/(2*sa))
-    dG2dv  = (-u2*r[1]*KM*(a1*x1+x2))/(K2*K2*sk)*math.exp(-(u2**2)/(2*sk)) + (r[1]*x1*(u2-u1+B))/(K2*sa)*math.exp(-((u2-u1+B)**2)/(2*sa))+s1*f1*((u2-uopt)/st)*math.exp(-((u2-uopt)**2)/(2*st))
 
-    dv1dt = k[0] * dG1dv
-    dv2dt = k[1] * dG2dv
+        self.pop1 = pop1
+        self.pop2 = pop2
+        self.strat1 = strat1
+        self.strat2 = strat2
+        self.IC = [self.pop1,self.pop2,self.strat1,self.strat2]
+        self.intxv = np.array(self.IC)
+        self.pop = odeint(evoLV, self.intxv, range(self.time+1))
+        self.fast = []
 
-    dxvdt = np.array([dx1dt, dx2dt, dv1dt, dv2dt])
-    return dxvdt
+        
+    #For simplicity, I've ignored the presence of the normal cells in this model
 
-intxv = np.array(IC)
-pop = odeint(evoLV, intxv, range(time+1))
+    """ pop1 = 0 #initial population size: normal cell
+    pop2= 10 #initial population size: cancer cell
+    strat1 = 3 #initial strategy: normal
+    strat2 = 3 #initial strategy: cancer """
 
-fast = []
 
-def fastG(u2, time_G):
-    if time_G>600:
-        s1=0.2
-    else:
-        s1=0
+    
 
-    x1 = pop[time_G][0]
-    x2 = pop[time_G][1]
-    u1 = pop[time_G][2]
-    a1 = 1 + math.exp(-(u2 - u1 + B) ** 2 / (2 * sa)) - math.exp(-(B ** 2 / (2 * sa)))
-    K2 = KM * math.exp(-(u2 ** 2) / (2 * sk))
-    Gfunc2 = (r[1] / K2 * (K2 - a1 * x1 - x2) - s1 * f1 * math.exp(-(u2 - uopt) ** 2 / (2 * st)))
-    if Gfunc2 < -1: #truncating the negative G's for simplicity
-        Gfunc2 = -1
-    return Gfunc2
+    def run(self):
 
-xp = np.arange(-5, 5, .1)
-yp = np.arange(0, time+1, 1)
-Xp, Yp = np.meshgrid(xp, yp)
+        def fastG(u2, time_G):
+            if time_G>600:
+                self.s1=0.2
+            else:
+                self.s1=0
 
-for i in yp:
-    temp1 = []
-    temp2 = []
-    for j in xp:
-        temp2.append(fastG(j,i))
-    fast.append(temp2)
-    temp1 = temp2 = []
+            x1 = self.pop[time_G][0]
+            x2 = self.pop[time_G][1]
+            u1 = self.pop[time_G][2]
+            a1 = 1 + math.exp(-(u2 - u1 + self.B) ** 2 / (2 * self.sa)) - math.exp(-(self.B ** 2 / (2 * self.sa)))
+            K2 = self.KM * math.exp(-(u2 ** 2) / (2 * self.sk))
+            Gfunc2 = (self.r[1] / K2 * (K2 - a1 * x1 - x2) - self.s1 * self.f1 * math.exp(-(u2 - self.uopt) ** 2 / (2 * self.st)))
+            if Gfunc2 < -1: #truncating the negative G's for simplicity
+                Gfunc2 = -1
+            return Gfunc2
 
-G_fast=[]
-for i in yp:
-    j = pop[i][3]
-    G_fast.append(fastG(j,i))
+        xp = np.arange(-5, 5, .1)
+        yp = np.arange(0, self.time+1, 1)
+        Xp, Yp = np.meshgrid(xp, yp)
 
-fast = np.array(fast)
+        for i in yp:
+            temp1 = []
+            temp2 = []
+            for j in xp:
+                temp2.append(fastG(j,i))
+            self.fast.append(temp2)
+            temp1 = temp2 = []
 
-fig = plt.figure()
-ax = plt.axes(projection='3d')
-ax.plot_surface(Xp, Yp, fast, cmap='Blues')
-ax.plot3D(pop[:,3],yp,G_fast,c='red')
-ax.set_xlabel('Evolutionary Strategy: v')
-ax.set_ylabel('Time')
-ax.set_zlabel('Fitness: G')
-ax.set_ylim(0,time)
-ax.set_zlim(-1,0.2)
-ax.view_init(35, 45)
-#ax.set_zlim(-1,0)
-plt.title('3D Adaptive Landscape: Treatment',pad=30)
-plt.show()
+        G_fast=[]
+        for i in yp:
+            j = self.pop[i][3]
+            G_fast.append(fastG(j,i))
 
-plt.figure()
-plt.subplot(211)
-plt.title('Cancer Cell Dynamics: Treatment')
-#plt.plot(pop[:,0],label='k = ' + str(k[0]))
-plt.plot(pop[:,1],label='k = ' + str(k[1]))
-plt.ylim(ymax=200)
-plt.grid(True)
-plt.ylabel('Pop Size, x')
-plt.subplot(212)
-#plt.plot(pop[:,2],label='k = ' + str(k[0]))
-plt.plot(pop[:,3],label='k = ' + str(k[1]))
-plt.grid(True)
-plt.xlabel('Time')
-plt.ylabel('Indv Strategy, v')
-plt.show()
+        self.fast = np.array(self.fast)
+
+        return {
+            'time': self.time, 
+            'G_Fast': G_fast
+        }
+
+        """ fig = plt.figure()
+        ax = plt.axes(projection='3d')
+        ax.plot_surface(Xp, Yp, fast, cmap='Blues')
+        ax.plot3D(self.pop[:,3],yp,G_fast,c='red')
+        ax.set_xlabel('Evolutionary Strategy: v')
+        ax.set_ylabel('Time')
+        ax.set_zlabel('Fitness: G')
+        ax.set_ylim(0,self.time)
+        ax.set_zlim(-1,0.2)
+        ax.view_init(35, 45)
+        #ax.set_zlim(-1,0)
+        plt.title('3D Adaptive Landscape: Treatment',pad=30)
+        plt.show()
+
+        plt.figure()
+        plt.subplot(211)
+        plt.title('Cancer Cell Dynamics: Treatment')
+        #plt.plot(pop[:,0],label='k = ' + str(k[0]))
+        plt.plot(self.pop[:,1],label='k = ' + str(self.k[1]))
+        plt.ylim(ymax=200)
+        plt.grid(True)
+        plt.ylabel('Pop Size, x')
+        plt.subplot(212)
+        #plt.plot(pop[:,2],label='k = ' + str(k[0]))
+        plt.plot(self.pop[:,3],label='k = ' + str(self.k[1]))
+        plt.grid(True)
+        plt.xlabel('Time')
+        plt.ylabel('Indv Strategy, v')
+        plt.show()
+
+        return plt """
+
+    

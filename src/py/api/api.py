@@ -1,5 +1,10 @@
+import sys, os
+sys.path.append(os.path.join(os.path.dirname(sys.path[0]),'models'))
+
 import flask
 from flask import request, jsonify
+
+import DrugResistance as dr
 
 app = flask.Flask(__name__)
 app.config["DEBUG"] = True
@@ -17,12 +22,20 @@ def page_not_found(e):
 def drugResistance():
     #TODO: Add in all required parameters
 
-    missingParams = checkParams(['pop1', 'pop2'], request.args)
+    missingParams = checkParams(['pop1', 'pop2', 'strat1', 'strat2'], request.args)
     
     if missingParams:
         return 'Missing parameters: ' + ','.join(missingParams), 400
 
-    return jsonify({'pop1': request.args['pop1'], 'pop2': request.args['pop2']})
+    pop1 = int(request.args['pop1'])
+    pop2 = int(request.args['pop2'])
+    strat1 = int(request.args['strat1'])
+    strat2 = int(request.args['strat2'])
+
+    drugResistance = dr.Model(pop1, pop2, strat1, strat2)
+    return jsonify(drugResistance.run())
+
+    # return jsonify({'pop1': request.args['pop1'], 'pop2': request.args['pop2']})
 
 @app.route('/api/models/Evolvability3D', methods=['GET'])
 def evolvability3D():
