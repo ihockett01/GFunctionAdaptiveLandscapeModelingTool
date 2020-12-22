@@ -1,18 +1,20 @@
 import numpy as np
 from scipy.integrate import *
-import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt, mpld3
 import math
 from mpl_toolkits.mplot3d import Axes3D
 from mpl_toolkits import mplot3d
+from pathlib import Path
+import BaseModel as bm
 
 #Drug Resistance Model
 
-class Model:
-    
+class Model(bm.ModelSchema):
 
     # Model Parameters
-    def __init__(self, pop1, pop2, strat1, strat2):
+    def __init__(self, pop1, pop2, strat1, strat2, outputPath):
         #Model constants
+        self.outputPath = outputPath
         self.time = 1500
         self.KM = 100
         self.r = [0.25,0.25]
@@ -76,14 +78,6 @@ class Model:
         
     #For simplicity, I've ignored the presence of the normal cells in this model
 
-    """ pop1 = 0 #initial population size: normal cell
-    pop2= 10 #initial population size: cancer cell
-    strat1 = 3 #initial strategy: normal
-    strat2 = 3 #initial strategy: cancer """
-
-
-    
-
     def run(self):
 
         def fastG(u2, time_G):
@@ -119,14 +113,9 @@ class Model:
             j = self.pop[i][3]
             G_fast.append(fastG(j,i))
 
-        self.fast = np.array(self.fast)
+        fast = np.array(self.fast)
 
-        return {
-            'time': self.time, 
-            'G_Fast': G_fast
-        }
-
-        """ fig = plt.figure()
+        fig = plt.figure()
         ax = plt.axes(projection='3d')
         ax.plot_surface(Xp, Yp, fast, cmap='Blues')
         ax.plot3D(self.pop[:,3],yp,G_fast,c='red')
@@ -138,9 +127,11 @@ class Model:
         ax.view_init(35, 45)
         #ax.set_zlim(-1,0)
         plt.title('3D Adaptive Landscape: Treatment',pad=30)
-        plt.show()
-
-        plt.figure()
+        #plt.savefig('3DAdaptiveLandscapeTreatment.png', format='png')
+        #plt.show()
+        return mpld3.fig_to_html(fig)
+        
+        """ plt.figure()
         plt.subplot(211)
         plt.title('Cancer Cell Dynamics: Treatment')
         #plt.plot(pop[:,0],label='k = ' + str(k[0]))
@@ -154,8 +145,10 @@ class Model:
         plt.grid(True)
         plt.xlabel('Time')
         plt.ylabel('Indv Strategy, v')
-        plt.show()
+        #plt.savefig('CancerCellDynamicsTreatment.png', format='png')
+        plt.show() """
 
-        return plt """
+        #return 'CancerCellDynamicsTreatment.png'
+        #return plt
 
     

@@ -2,12 +2,15 @@ import sys, os
 sys.path.append(os.path.join(os.path.dirname(sys.path[0]),'models'))
 
 import flask
-from flask import request, jsonify
+from flask import request, jsonify, send_from_directory
 
 import DrugResistance as dr
+from pathlib import Path
 
 app = flask.Flask(__name__)
 app.config["DEBUG"] = True
+
+outputPath = str(Path(__file__).parent)
 
 @app.route('/', methods=['GET'])
 def home():
@@ -32,8 +35,10 @@ def drugResistance():
     strat1 = int(request.args['strat1'])
     strat2 = int(request.args['strat2'])
 
-    drugResistance = dr.Model(pop1, pop2, strat1, strat2)
-    return jsonify(drugResistance.run())
+    drugResistance = dr.Model(pop1, pop2, strat1, strat2, outputPath)
+    filename = drugResistance.run()
+    return filename
+    # return send_from_directory()
 
     # return jsonify({'pop1': request.args['pop1'], 'pop2': request.args['pop2']})
 
