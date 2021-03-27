@@ -1,0 +1,52 @@
+
+
+<div class="container">
+  <h1 class="title">
+    {{ 'PAGES.HOME.TITLE' | translate }}
+  </h1>
+  <div class="row">
+
+    <div class="column column-left">
+      <div>
+        <label for="modelList">G-Function Model</label>
+        <select formControlName="modelList" class="form-control" (change)="changeModel($event)">
+          <option value="" disabled>Select a Model</option>
+          <option *ngFor="let model of modelList | keyvalue" value="{{model.key}}">{{model.value.value}}</option>
+        </select>
+      </div>
+      <div class="modelOptions" [hidden]="!IsModelSelected">
+        <div>
+          <button (click)="refreshGraph()">
+            <fa-icon [icon]="['fas', 'play']"></fa-icon> Run Model
+          </button>
+          <button (click)="showWiki()">
+            <fa-icon [icon]="['fas', 'info']"></fa-icon>
+          </button>
+          <button (click)="resetDefault()">
+            <fa-icon [icon]="['fas', 'recycle']"></fa-icon>
+          </button>
+        </div>
+        <div>
+          <label for="type">Graph Type: </label>
+          <input formControlName="type" name="type" type="radio" value="2d" (change)="changeModelType($event)" selected="selected"/><label for="2d"> 2d </label>
+          <input formControlName="type" name="type" type="radio" value="3d" (change)="changeModelType($event)" /><label for="3d"> 3d </label>
+        </div>
+        
+        <table>
+          <tr *ngFor="let parameter of parameterList | keyvalue">
+            <td><label for="{{parameter.key}}">{{parameter.key}}</label></td>
+            <td><input type="number" name="{{parameter.key}}" 
+              value="{{parameter.value.value}}" (change)="changeParameterValue($event)" />
+              <span class="tags" [attr.data-gloss]="parameter.value.name"><fa-icon [icon]="['fas', 'info']"></fa-icon></span>
+            </td>
+          </tr>
+        </table>
+      </div>
+    </div>
+    
+    <div class="column column-right">
+      <ngx-spinner bdColor = "rgba(0, 0, 0, 0.8)" size = "medium" color = "#fff" type = "timer" [fullScreen] = "false"><p> Loading... </p></ngx-spinner>
+      <app-graph></app-graph>
+    </div>
+  </div>  
+</div>

@@ -1,0 +1,92 @@
+/* You can add global styles to this file, and also import other style files */
+html, body {
+  margin: 0;
+  padding: 0;
+
+  height: 100%;
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+/* CAN (MUST) BE REMOVED ! Sample Global style */
+.container {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  background: whitesmoke no-repeat center fixed;
+  -webkit-background-size: cover; /* pour anciens Chrome et Safari */
+  background-size: cover; /* version standardisée */
+
+  .title {
+    color: black;
+    margin: 0;
+    padding: 20px 5px;
+  }
+
+  select {
+    background-color: white;
+  }
+
+  li {
+    list-style: none;
+  }
+
+  .row {
+    display: flex;
+    border-top: 1px grey solid;
+    height: 100%;
+    width: 100%;
+  }
+  
+  .column-left {
+    padding: 5px 15px 5px 5px;
+    flex: 30%;
+    height: 100%;
+    border-right: 1px grey solid;
+    overflow-y: scroll;
+
+    div {
+      padding: 5px;
+    }
+  }
+
+  .column-right {
+    padding: 5px 15px 5px 5px;
+    flex: 70%;
+  }
+  
+  label {
+    margin-right: 5px;
+  }
+
+  .tags {
+    display: inline;
+    position: relative;
+  }
+  
+  .tags:hover:after {
+    background: #333;
+    background: rgba(0, 0, 0, .8);
+    border-radius: 5px;
+    bottom: -34px;
+    color: #fff;
+    content: attr(data-gloss);
+    left: 20%;
+    padding: 5px 15px;
+    position: absolute;
+    z-index: 98;
+    width: 350px;
+  }
+  
+  .tags:hover:before {
+    border: solid;
+    border-color: #333 transparent;
+    border-width: 0 6px 6px 6px;
+    bottom: -4px;
+    content: "";
+    left: 50%;
+    position: absolute;
+    z-index: 99;
+  }
+}
