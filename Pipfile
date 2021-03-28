@@ -7,6 +7,9 @@ name = "pypi"
 flask = "*"
 flask-cors = "*"
 py2app = "*"
+jasmine-core = {editable = true, path = "."}
+mpld3 = "*"
+unknown = {editable = true, path = "."}
 
 [dev-packages]
 

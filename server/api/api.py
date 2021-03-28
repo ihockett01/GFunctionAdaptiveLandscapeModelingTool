@@ -93,8 +93,8 @@ def __runModel__(modelName: str, queryString: str, is3d: bool):
         graphJson = model.Run(is3d, 'Api', parameters)
 
         return json.dumps(graphJson)
-    except:
-        return 'fail'
+    except Exception as e:
+        return 'failed to run: ' + modelName + '\r\n\t [Trace]: \r\n\t' + str(e), 500
 
 def __shutdown_server__():
     logging.info('attempting to shutdown server')

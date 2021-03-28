@@ -7,7 +7,7 @@ Usage:
 
 from setuptools import setup
 
-APP = ['cli.py']
+APP = ['gfunctionapibootstrapper.py']
 DATA_FILES = []
 OPTIONS = { 
     'argv_emulation': False,

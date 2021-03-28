@@ -34,6 +34,7 @@ class OnePrey(BaseModel):
         super(OnePrey, self).__init__(self)
 
     def __Run__(self):
+        plt.switch_backend('Agg')
         logging.info("Running One Prey")
 
         def evoLV(X, t):

@@ -45,6 +45,7 @@ class Evolvability(BaseModel):
         super(Evolvability, self).__init__(self)
 
     def __Run__(self):
+        plt.switch_backend('Agg')
         logging.info("Running Evolvability")
 
         def evoLV(X, t):
@@ -179,8 +180,6 @@ class Evolvability(BaseModel):
         self.yp = np.arange(0, 1001, 1)
         self.Xp, self.Yp = np.meshgrid(self.xp, self.yp)
 
-        
-
         for i in self.yp:
             temp1 = []
             temp2 = []
@@ -205,49 +204,52 @@ class Evolvability(BaseModel):
         self.fast = np.array(self.fast)
 
         fig = plt.figure()
-        ax = plt.axes(projection='3d')
-        ax.plot_surface(self.Xp, self.Yp, self.slow, cmap='Blues')
-        ax.plot_surface(self.Xp, self.Yp, self.fast, cmap='Oranges')
-        ax.plot3D(self.pop[:,3],self.yp,self.G_fast,c='greenyellow') #fast
-        ax.plot3D(self.pop[:,2],self.yp,self.G_slow,c='c') #slow
-        ax.set_xlabel('Evolutionary Strategy: v')
-        ax.set_ylabel('Time')
-        ax.set_zlabel('Fitness: G')
-        #ax.set_zlim(-1,0.2)
-        ax.view_init(35, 45)
-        plt.title('Adaptive Landscape: No Aggressiveness Close',pad=30)
-        
 
-        #Obtaining extinction times
-        for i in range(len(self.pop[:,1])):
-            if (self.pop[:,1][i])<2:
-                print(i)
-                print('Fast')
-                break
+        if self.Is3d:
+            
+            ax = plt.axes(projection='3d')
+            ax.plot_surface(self.Xp, self.Yp, self.slow, cmap='Blues')
+            ax.plot_surface(self.Xp, self.Yp, self.fast, cmap='Oranges')
+            ax.plot3D(self.pop[:,3],self.yp,self.G_fast,c='greenyellow') #fast
+            ax.plot3D(self.pop[:,2],self.yp,self.G_slow,c='c') #slow
+            ax.set_xlabel('Evolutionary Strategy: v')
+            ax.set_ylabel('Time')
+            ax.set_zlabel('Fitness: G')
+            ax.set_zlim(-1,0.2)
+            ax.view_init(35, 45)
+            plt.title('Adaptive Landscape: No Aggressiveness Close',pad=30)
+        else:
+            #Obtaining extinction times
+            for i in range(len(self.pop[:,1])):
+                if (self.pop[:,1][i])<2:
+                    print(i)
+                    print('Fast')
+                    break
 
 
-        for j in range(len(self.pop[:,0])):
-            if (self.pop[:,0][j])<2:
-                print(j)
-                print('Slow')
-                break
+            for j in range(len(self.pop[:,0])):
+                if (self.pop[:,0][j])<2:
+                    print(j)
+                    print('Slow')
+                    break
 
-        plt.figure()
-        plt.subplot(211)
-        plt.title('No Aggressiveness: Close to Strategy Equilibrium')
-        plt.plot(self.pop[:,0],label='k = ' + str(self.k[0]))
-        plt.plot(self.pop[:,1],label='k = ' + str(self.k[1]))
-        plt.ylim(ymax=200)
-        plt.grid(True)
-        plt.ylabel('Pop Size, x')
-        plt.subplot(212)
-        plt.plot(self.pop[:,2],label='k = ' + str(self.k[0]))
-        plt.plot(self.pop[:,3],label='k = ' + str(self.k[1]))
-        plt.grid(True)
-        plt.ylabel('Indv Strategy, v')
+            # fig = plt.figure()
+            plt.subplot(211)
+            plt.title('No Aggressiveness: Close to Strategy Equilibrium')
+            plt.plot(self.pop[:,0],label='k = ' + str(self.k[0]))
+            plt.plot(self.pop[:,1],label='k = ' + str(self.k[1]))
+            plt.ylim(ymax=200)
+            plt.grid(True)
+            plt.ylabel('Pop Size, x')
+            plt.subplot(212)
+            plt.plot(self.pop[:,2],label='k = ' + str(self.k[0]))
+            plt.plot(self.pop[:,3],label='k = ' + str(self.k[1]))
+            plt.grid(True)
+            plt.ylabel('Indv Strategy, v')
 
         figDictionary = mpld3.fig_to_dict(fig)
         plt.close()
+
         return figDictionary
         
 

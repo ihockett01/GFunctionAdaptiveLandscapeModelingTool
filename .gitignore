@@ -15,6 +15,7 @@ src/**/*.js
 *.eggs
 *__pycache__
 /test
+*.egg-info
 
 # dependencies
 /node_modules
@@ -54,5 +55,6 @@ package-lock.json
 /e2e/*.map
 
 # System Files
-.DS_Store
+*.DS_Store
 Thumbs.db
+.DS_Store

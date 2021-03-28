@@ -60,6 +60,7 @@ class DrugResistance(BaseModel):
         super(DrugResistance, self).__init__(self)
         
     def __Run__(self):
+        plt.switch_backend('Agg')
         global time
         global KM
         global r
